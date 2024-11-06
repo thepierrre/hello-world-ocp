@@ -18,12 +18,17 @@ spec:
         version: v1
     spec:
       containers:
-        - image: quay.io/nlembers/hello-world:1.0
+        - image: quay.io/powczarc/hello-world:3.0
           imagePullPolicy: Always
           name: hello-world
           env:
             - name: PORT
               value: "8080"
+            - name: name
+              valueFrom:
+                configMapKeyRef:
+                  name: hello-world
+                  key: name
           ports:
             - containerPort: 8080
               name: http
@@ -36,37 +41,3 @@ spec:
               drop: ["ALL"]
             seccompProfile:
               type: RuntimeDefault
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: hello-world
-  name: hello-world
-spec:
-  ports:
-    - name: http
-      port: 8080
-      protocol: TCP
-      targetPort: 8080
-  selector:
-    app: hello-world
-  sessionAffinity: None
-  type: ClusterIP
----
-apiVersion: route.openshift.io/v1
-kind: Route
-metadata:
-  labels:
-    app: hello-world
-  name: hello-world
-spec:
-  port:
-    targetPort: http
-  tls:
-    termination: edge
-  to:
-    kind: Service
-    name: hello-world
-    weight: 100
-  wildcardPolicy: None
